@@ -10,7 +10,7 @@ node_js:
 sudo: false
 
 matrix:
-  allow_failure:
+  allow_failures:
     - node_js: '0.10'
 
 deploy:
