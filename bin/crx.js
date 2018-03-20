@@ -2,8 +2,8 @@
 
 var path = require("path");
 var fs = require("fs");
-var rsa = require('node-rsa');
 var Promise = require('es6-promise').Promise;
+var generatePrivateKey = require("../crypto").generatePrivateKey;
 
 var program = require("commander");
 var ChromeExtension = require("..");
@@ -52,27 +52,6 @@ function readKeyFile(keyPath) {
   });
 }
 
-/**
- * Generate a new key file
- * @param {String} keyPath path of the key file to create
- * @returns {Promise}
- */
-function generateKeyFile(keyPath) {
-  return new Promise(function(resolve, reject) {
-    var key = new rsa({b: 2048}),
-        keyVal = key.exportKey('pkcs1-private-pem');
-
-    fs.writeFile(keyPath, keyVal, function(err){
-      if (err) {
-        throw err;
-      }
-
-      console.log('Key file has been generated at %s', keyPath);
-
-      resolve(keyVal);
-    });
-  });
-}
 
 function keygen (dir, program) {
   dir = dir ? resolve(cwd, dir) : cwd;
@@ -84,7 +63,16 @@ function keygen (dir, program) {
       throw new Error('key.pem already exists in the given location.');
     }
 
-    generateKeyFile(keyPath);
+    generatePrivateKey()
+      .then(function(privateKey) {
+        fs.writeFile(keyPath, privateKey, function(err){
+          if (err) {
+            throw err;
+          }
+
+          console.log('Key file has been generated at %s', keyPath);
+        });
+      });
   });
 }
 

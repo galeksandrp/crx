@@ -4,11 +4,14 @@
 var fs = require("fs");
 var path = require("path");
 var join = path.join;
-var crypto = require("crypto");
 var RSA = require("node-rsa");
 var archiver = require("archiver");
 var Promise = require("es6-promise").Promise;
 var resolve = require("./resolver.js");
+
+var generateAppId = require("../crypto").generateAppId;
+var generatePublicKey = require("../crypto").generatePublicKey;
+var sign = require("../crypto").sign;
 
 function ChromeExtension(attrs) {
   if ((this instanceof ChromeExtension) !== true) {
@@ -140,17 +143,7 @@ ChromeExtension.prototype = {
    * });
    */
   generatePublicKey: function () {
-    var privateKey = this.privateKey;
-
-    return new Promise(function(resolve, reject){
-      if (!privateKey) {
-        return reject('Impossible to generate a public key: privateKey option has not been defined or is empty.');
-      }
-
-      var key = new RSA(privateKey);
-
-      resolve(key.exportKey('pkcs8-public-der'));
-    });
+    return generatePublicKey(this.privateKey, 'der');
   },
 
   /**
@@ -162,13 +155,7 @@ ChromeExtension.prototype = {
    * @returns {Buffer}
    */
   generateSignature: function (contents) {
-    return new Buffer(
-      crypto
-        .createSign("sha1")
-        .update(contents)
-        .sign(this.privateKey),
-      "binary"
-    );
+    return sign(contents, this.privateKey);
   },
 
   /**
@@ -256,39 +243,8 @@ ChromeExtension.prototype = {
    * @param {Buffer|string} [publicKey] the public key to use to generate the app ID
    * @returns {string}
    */
-  generateAppId: function (keyOrPath) {
-    keyOrPath = keyOrPath || this.publicKey;
-
-    if (typeof keyOrPath !== 'string' && !(keyOrPath instanceof Buffer)) {
-      throw new Error('Public key is neither set, nor given');
-    }
-
-    // Handling Windows Path
-    // Possibly to be moved in a different method
-    if (typeof keyOrPath === 'string') {
-      var charCode = keyOrPath.charCodeAt(0);
-
-      // 65 (A) < charCode < 122 (z)
-      if (charCode >= 65 && charCode <= 122 && keyOrPath[1] === ':') {
-        keyOrPath = keyOrPath[0].toUpperCase() + keyOrPath.slice(1);
-
-        // TODO move to Buffer.from when drop old Node versions in crx@4
-        /* istanbul ignore next */
-        keyOrPath = ('from' in Buffer)
-          ? Buffer.from(keyOrPath, "utf-16le")
-          : new Buffer(keyOrPath, "utf-16le");
-      }
-    }
-
-    return crypto
-      .createHash("sha256")
-      .update(keyOrPath)
-      .digest()
-      .toString("hex")
-      .split("")
-      .map(function(x) { return (parseInt(x, 16) + 0x0A).toString(26); })
-      .join("")
-      .slice(0, 32);
+  generateAppId: function (publicKey) {
+    return generateAppId(publicKey || this.publicKey);
   },
 
   /**
