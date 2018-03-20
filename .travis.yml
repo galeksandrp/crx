@@ -8,6 +8,11 @@ node_js:
 - v6
 - node
 sudo: false
+
+matrix:
+  allow_failure:
+    - node_js: '0.10'
+
 deploy:
   provider: npm
   email: hi@oncletom.io
