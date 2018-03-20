@@ -2,15 +2,15 @@
 
 > crx is a utility to **package Google Chrome extensions** via a *Node API* and the *command line*. It is written **purely in JavaScript** and **does not require OpenSSL**!
 
+Massive hat tip to the [node-rsa project](https://npmjs.com/node-rsa) for the pure JavaScript encryption!
+
+**Compatibility**: this extension is compatible with `node>=0.10`.
+
 Packages are available to use `crx` with:
 
 - *grunt*: [grunt-crx](https://npmjs.com/grunt-crx)
 - *gulp*: [gulp-crx-pack](https://npmjs.com/gulp-crx-pack)
 - *webpack*: [crx-webpack-plugin](https://npmjs.com/crx-webpack-plugin)
-
-Massive hat tip to the [node-rsa project](https://npmjs.com/node-rsa) for the pure JavaScript encryption!
-
-**Compatibility**: this extension is compatible with `node>=0.10`.
 
 ## Install
 
@@ -18,9 +18,13 @@ Massive hat tip to the [node-rsa project](https://npmjs.com/node-rsa) for the pu
 $ npm install crx
 ```
 
-## Module API
+## crx API
 
-Asynchronous functions returns an [ES6 Promise](https://github.com/jakearchibald/es6-promise).
+This module helps you _load_ and _package_ an extension rootDirectory
+as `.zip` and `.crx` files.
+
+`zip` files can be uploaded on the [Chrome Web Store][] whereas `crx` files
+are meant to be [self distributed][].
 
 ```js
 const fs = require("fs");
@@ -40,12 +44,17 @@ crx.load("./myFirstExtension"))
   });
 ```
 
-### ChromeExtension = require("crx")
-### crx = new ChromeExtension(attrs)
+### `ChromeExtension(options)`
 
 This module exports the `ChromeExtension` constructor directly, which can take an optional attribute object, which is used to extend the instance.
 
-### crx.load(path|files)
+```js
+var ChromeExtension = require("crx");
+
+crx = new ChromeExtension({ ... });
+```
+
+### `crx.load(path|files)`
 
 Prepares the temporary workspace for the Chrome Extension located at `path` — which is expected to directly contain `manifest.json`.
 
@@ -63,7 +72,7 @@ crx.load(['/my/extension/manifest.json', '/my/extension/background.json']).then(
 });
 ```
 
-### crx.pack()
+### `crx.pack()`
 
 Packs the Chrome Extension and resolves the promise with a Buffer containing the `.crx` file.
 
@@ -75,7 +84,7 @@ crx.load('/path/to/extension')
   });
 ```
 
-### crx.generateUpdateXML()
+### `crx.generateUpdateXML()`
 
 Returns a Buffer containing the update.xml file used for `autoupdate`, as specified for `update_url` in the manifest. In this case, the instance must have a property called `codebase`.
 
@@ -89,6 +98,40 @@ crx.load('/path/to/extension')
     const xmlBuffer = crx.generateUpdateXML();
     fs.writeFile('/foo/bar/update.xml', xmlBuffer);
   });
+```
+
+## crypto API
+
+### `generateAppId(publicKey)`
+
+```js
+const crypto = require('crx/crypto');
+
+
+```
+
+### `generateAppIdFromPath(path)`
+
+```js
+const crypto = require('crx/crypto');
+
+
+```
+
+### `generatePrivateKey()`
+
+```js
+const crypto = require('crx/crypto');
+
+
+```
+
+### `generatePublicKey(privateKey[, format])`
+
+```js
+const crypto = require('crx/crypto');
+
+
 ```
 
 ## CLI API
@@ -176,23 +219,26 @@ to sign your package without keeping the key in the directory.
 Copyright
 ---------
 
-    Copyright (c) 2016 Jed Schmidt, Thomas Parisot and collaborators
+> Copyright (c) 2018 Jed Schmidt, Thomas Parisot and collaborators
+>
+> Permission is hereby granted, free of charge, to any person obtaining
+> a copy of this software and associated documentation files (the
+> "Software"), to deal in the Software without restriction, including
+> without limitation the rights to use, copy, modify, merge, publish,
+> distribute, sublicense, and/or sell copies of the Software, and to
+> permit persons to whom the Software is furnished to do so, subject to
+> the following conditions:
+>
+> The above copyright notice and this permission notice shall be
+> included in all copies or substantial portions of the Software.
+>
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+> EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+> MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+> NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+> LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+> OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+> WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-    Permission is hereby granted, free of charge, to any person obtaining
-    a copy of this software and associated documentation files (the
-    "Software"), to deal in the Software without restriction, including
-    without limitation the rights to use, copy, modify, merge, publish,
-    distribute, sublicense, and/or sell copies of the Software, and to
-    permit persons to whom the Software is furnished to do so, subject to
-    the following conditions:
-
-    The above copyright notice and this permission notice shall be
-    included in all copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-    NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-    LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-    OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-    WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+[Chrome Web Store]: https://chrome.google.com/webstore/developer/dashboard
+[self distributed]: https://developer.chrome.com/extensions/external_extensions
