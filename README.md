@@ -25,18 +25,18 @@ Asynchronous functions returns an [ES6 Promise](https://github.com/jakearchibald
 ```js
 const fs = require("fs");
 const ChromeExtension = require("crx");
-const crx = new ChromeExtension(
+const crx = new ChromeExtension({
   codebase: "http://localhost:8000/myFirstExtension.crx",
-  privateKey: fs.readFileSync("./key.pem"))
+  privateKey: fs.readFileSync("./key.pem")
 });
 
-crx.load("./myFirstExtension"))
+crx.load("./myFirstExtension")
   .then(crx => crx.pack())
   .then(crxBuffer => {
     const updateXML = crx.generateUpdateXML()
 
-    fs.writeFile("../update.xml"), updateXML);
-    fs.writeFile("../myFirstExtension.crx"), crxBuffer);
+    fs.writeFile("../update.xml", updateXML);
+    fs.writeFile("../myFirstExtension.crx", crxBuffer);
   });
 ```
 
